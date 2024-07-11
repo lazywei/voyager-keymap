@@ -4,8 +4,20 @@
 SOURCE_DIR="./voyager_attempt-0624_source"
 DEST_DIR="./qmk_firmware/keyboards/voyager/keymaps/cwc"
 
-ZIP_FILE="$1"
+ZIP_FILE="latest_oryx_source.zip"
 FOLDER_TO_REMOVE="voyager_attempt-0624_source"
+
+LAYOUT="BRyqO"
+output=$(curl --location 'https://oryx.zsa.io/graphql' --header 'Content-Type: application/json' --data '{"query":"query getLayout($hashId: String!, $revisionId: String!, $geometry: String) {layout(hashId: $hashId, geometry: $geometry, revisionId: $revisionId) {  revision { title, hashId  }}}","variables":{"hashId":"'"$LAYOUT"'","geometry":"voyager","revisionId":"latest"}}' | jq '.data.layout.revision | [.title, .hashId]')
+
+echo "OUTPUT: $output"
+TITLE=$(echo "$output" | jq -r '.[0]')
+HASH_ID=$(echo "$output" | jq -r '.[1]')
+
+echo "Latest title: $TITLE"
+echo "Latest hash: $HASH_ID"
+
+curl -L "https://oryx.zsa.io/source/$HASH_ID" -o "$ZIP_FILE"
 
 # Remove the existing folder
 if [ -d "$FOLDER_TO_REMOVE" ]; then
